@@ -33,7 +33,7 @@ const (
 var (
 	menuOptions       = []string{"Text", "Image", "Audio", "Exit"}
 	selectedMenuIndex int
-	currentDirectory  = "/"
+	currentDirectory  = "/Users/aidan/ai-assistant/mydata"
 	files             []string
 	selectedFileIndex int
 	analysisResult    string
@@ -55,34 +55,42 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				selectedMenuIndex = (selectedMenuIndex - 1 + len(menuOptions)) % len(menuOptions)
 			case "q", "Esc":
 				return m, tea.Quit
-			case "Enter", "enter", "\r":
+			case "enter", "\r":
 				switch selectedMenuIndex {
 				case 0, 1, 2:
-					m.state = fileBrowser
-					var err error
-					files, err = listFiles(currentDirectory)
+					files, err := listFiles(currentDirectory)
 					if err != nil {
 						fmt.Println("Error listing files:", err)
+						return m, nil
+					}
+					if len(files) > 0 {
+						m.state = fileBrowser
+					} else {
+						return m, nil
 					}
 				case 3:
 					return m, tea.Quit
 				}
 			}
 		case fileBrowser:
+			if len(files) == 0 {
+				return m, nil
+			}
 			switch msg.String() {
 			case "j", "ArrowDown":
 				selectedFileIndex = (selectedFileIndex + 1) % len(files)
 			case "k", "ArrowUp":
 				selectedFileIndex = (selectedFileIndex - 1 + len(files)) % len(files)
-			case "Enter", "\r", "\n":
-				var err error
-				analysisResult, err = sendFileToAI(files[selectedFileIndex])
-				if err != nil {
-					fmt.Println("Error sending file to AI:", err)
-				} else {
-					m.state = displayResult
-				}
-			case "q", "Esc":
+      case "enter", "\r":
+      	var err error
+	      analysisResult, err = sendFileToAI(files[selectedFileIndex])
+	      if err != nil {
+	      	fmt.Println("Error sending file to AI:", err)
+		      return m, nil
+	}     else {
+		m.state = displayResult
+	}
+					case "q", "Esc":
 				m.state = mainMenu
 			}
 		case displayResult:
@@ -95,13 +103,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-
-
 func (m model) View() string {
 	var b strings.Builder
 
 	switch m.state {
-	case mainMenu:
+	case mainMenu, textMenu, imageMenu, audioMenu:
 		b.WriteString("Select an Option:\n\n")
 		for i, option := range menuOptions {
 			style := lipgloss.NewStyle().Foreground(lipgloss.Color("#FFF"))
@@ -111,13 +117,17 @@ func (m model) View() string {
 			b.WriteString(style.Render(option) + "\n")
 		}
 	case fileBrowser:
-		b.WriteString("Select a File:\n\n")
-		for i, file := range files {
-			style := lipgloss.NewStyle().Foreground(lipgloss.Color("#FFF"))
-			if i == selectedFileIndex {
-				style = style.Background(lipgloss.Color("#357DED")).Foreground(lipgloss.Color("#FFF")).Bold(true)
+		if len(files) == 0 {
+			b.WriteString("No files found.\n")
+		} else {
+			b.WriteString("Select a File:\n\n")
+			for i, file := range files {
+				style := lipgloss.NewStyle().Foreground(lipgloss.Color("#FFF"))
+				if i == selectedFileIndex {
+					style = style.Background(lipgloss.Color("#357DED")).Foreground(lipgloss.Color("#FFF")).Bold(true)
+				}
+				b.WriteString(style.Render(file) + "\n")
 			}
-			b.WriteString(style.Render(file) + "\n")
 		}
 	case displayResult:
 		b.WriteString("AI Analysis Result:\n")
@@ -126,7 +136,6 @@ func (m model) View() string {
 
 	return b.String()
 }
-
 
 func main() {
 	p := tea.NewProgram(model{state: mainMenu})
