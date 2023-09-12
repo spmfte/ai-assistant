@@ -12,7 +12,6 @@ AI-Assistant is an innovative command-line interface tool that integrates seamle
 - [Usage](#usage)
 - [Development](#development)
 - [Contribution](#contribution)
-- [License](#license)
 - [Acknowledgements](#acknowledgements)
 
 </details>
@@ -67,10 +66,6 @@ Make sure to follow Go's best practices for a seamless development experience. P
 - Commit your changes (git commit -m 'Add some AmazingFeature').
 - Push to the branch (git push origin feature/AmazingFeature).
 - Open a pull request.
-
-📜 License
-
-This project is licensed under the MIT License. See LICENSE for more information.
 
 🌟 Acknowledgements
 
