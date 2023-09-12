@@ -1,75 +1,59 @@
-# 🚀 AI-Assistant: Unleash the Power of LocalAI
+# AI-Assistant
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue) ![Made with Go](https://img.shields.io/badge/Made%20with-Go-1f425f.svg) ![LocalAI](https://img.shields.io/badge/LocalAI-Integrated-green)
+AI-Assistant is a command-line tool designed to integrate with the LocalAI API. It offers a text-based interface for AI-driven conversation and code completion features.
 
-AI-Assistant is an innovative command-line interface tool that integrates seamlessly with the LocalAI API to provide users with natural language processing and code completion capabilities, all from the convenience of their terminal.
+## Features
 
-<details>
-<summary>Table of Contents</summary>
+- **TUI Interface**: Simplified interaction with the LocalAI API through a text interface.
+- **Chat Mode**: Retrieve AI-generated conversational responses.
+- **Completion Mode**: Access AI-enhanced code completions.
+- **Autostart LocalAI**: Automatic startup without the need for manual server interactions.
 
-- [Installation](#installation)
-- [Features](#features)
-- [Usage](#usage)
-- [Development](#development)
-- [Contribution](#contribution)
-- [Acknowledgements](#acknowledgements)
+## Usage
 
-</details>
-
----
-
-## 🛠 Installation
-
-**Prerequisites:** 
-- [Go](https://golang.org/dl/) (version 1.21 or higher)
-- [LocalAI](https://localai.link) 
+To initiate the AI-Assistant:
 
 ```bash
-git clone https://github.com/yourusername/ai-assistant.git
-cd ai-assistant
-go build main.go
-```
-⚡ Features
-
-- **TUI Interface**: An interactive text-based user interface making it user-friendly to interact with the LocalAI API.
-- **Chat Mode**: Get AI-generated conversational responses.
-- **Completion Mode**: Enhance your code with AI-powered code completions.
-- **Autostart LocalAI**: Seamless experience without manual server start-ups.
-
-💡 Usage
-
-To launch the AI-Assistant:
-
 ./ai-assistant
+```
 
-Navigate through options using arrow keys, j and k. Select using the Enter key.
+Navigation:
+- Use arrow keys, `j`, and `k` for navigation.
+- Select options with the `Enter` key.
 
-**Options**:
-- **Chat**: Simulate an AI conversation.
-- **Completion**: Generate code completions.
-- **Exit**: Gracefully shut down the application and the LocalAI server.
+Available Options:
+- **Chat**: Engage in an AI-generated conversation.
+- **Completion**: Receive code suggestions.
+- **Exit**: Terminate the application and the associated LocalAI server.
 
-🌱 Development
+## Development
 
-To improve the AI-Assistant or tailor it to your needs, you can start by cloning the project:
+To further develop or customize AI-Assistant:
+
+1. Clone the repository:
 
 ```bash
 git clone https://github.com/yourusername/ai-assistant.git
 ```
 
-Make sure to follow Go's best practices for a seamless development experience. PRs and issues are always welcome.
+2. Adhere to Go's development standards for an optimal development experience. Contributions in the form of PRs and issues are always welcome.
 
-🙌 Contribution
+## Contribution Process
 
-- Fork the project.
-- Create your feature branch (git checkout -b feature/AmazingFeature).
-- Commit your changes (git commit -m 'Add some AmazingFeature').
-- Push to the branch (git push origin feature/AmazingFeature).
-- Open a pull request.
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature/NewFeature`).
+3. Commit your changes (`git commit -m 'Add NewFeature'`).
+4. Push the branch (`git push origin feature/NewFeature`).
+5. Submit a pull request.
 
-🌟 Acknowledgements
+## License
 
-- **LocalAI**: For their impressive on-prem AI solutions.
-- **OpenAI**: For making incredible advancements in AI.
+AI-Assistant is licensed under the MIT License. Refer to the LICENSE file for more details.
 
-🤝 Thank you for your interest in AI-Assistant. Don't hesitate to open an issue or provide feedback!
+## Acknowledgments
+
+- LocalAI for their on-premise AI solutions.
+- OpenAI for their advancements in AI technology.
+
+Feedback and issues are appreciated.
+Feel free to customize as needed.
