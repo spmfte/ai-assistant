@@ -10,7 +10,8 @@ import (
   "net/http"
   "mime/multipart"
   "bytes"
-  "io/ioutil"
+  "path/filepath"
+	"io"
 )
 
 type model struct {
@@ -41,6 +42,8 @@ var (
 	return nil
 }
 
+// ... [imports and variable declarations]
+
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     switch msg := msg.(type) {
     case tea.KeyMsg:
@@ -67,30 +70,33 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                     return m, tea.Quit
                 }
             }
-       case fileBrowser:
-    switch msg.String() {
-    case "j", "ArrowDown":
-        selectedFileIndex = (selectedFileIndex + 1) % len(files)
-    case "k", "ArrowUp":
-        selectedFileIndex = (selectedFileIndex - 1 + len(files)) % len(files)
-    case "Enter":
-        analysisResult, err := sendFileToAI(files[selectedFileIndex])
-        if err != nil {
-            // Handle the error. Here, I just print it, but you may want to 
-            // change the state to an error state or do something else.
-            fmt.Println("Error sending file to AI:", err)
-        } else {
-            m.state = displayResult
-        }
-    case "q", "Esc":
-        m.state = mainMenu
-    }            }
+        case fileBrowser:
+            switch msg.String() {
+            case "j", "ArrowDown":
+                selectedFileIndex = (selectedFileIndex + 1) % len(files)
+            case "k", "ArrowUp":
+                selectedFileIndex = (selectedFileIndex - 1 + len(files)) % len(files)
+            case "Enter":
+                analysisResult, err := sendFileToAI(files[selectedFileIndex])
+                if err != nil {
+                    // Handle the error. Here, I just print it, but you may want to 
+                    // change the state to an error state or do something else.
+                    fmt.Println("Error sending file to AI:", err)
+                } else {
+                    m.state = displayResult
+                }
+            case "q", "Esc":
+                m.state = mainMenu
+            }
         case displayResult:
             // Handle displaying results logic here
         }
     }
     return m, nil
 }
+
+// ... [rest of the code]
+
 
 //... (rest of the code below this point)
 
@@ -135,7 +141,7 @@ func main() {
 
 // Dummy function to represent sending a file to LocalAI
 func sendFileToAI(filePath string) (string, error) {
-    url := "http://localai.server.endpoint/analyze" // Replace this with the actual endpoint of your LocalAI server
+    url := "http://localai.server.endpoint/analyze" // Replace with the actual endpoint of your LocalAI server
 
     // Prepare the file for upload
     file, err := os.Open(filePath)
@@ -174,7 +180,7 @@ func sendFileToAI(filePath string) (string, error) {
     defer resp.Body.Close()
 
     // Read the response from the server
-    respBody, err := ioutil.ReadAll(resp.Body)
+    respBody, err := io.ReadAll(resp.Body)
     if err != nil {
         return "", err
     }
@@ -182,6 +188,8 @@ func sendFileToAI(filePath string) (string, error) {
     // Here, I am assuming that the response is a string. 
     // Adjust based on the actual response format (e.g., JSON).
     return string(respBody), nil
+}
+
 }
 func listFiles(directory string) ([]string, error) {
 	var files []string
