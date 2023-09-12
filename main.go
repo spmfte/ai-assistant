@@ -1,17 +1,18 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
-	"os"
-	"strings"
-   tea "github.com/charmbracelet/bubbletea"
-  "github.com/charmbracelet/lipgloss"
-	"github.com/karrick/godirwalk"
-  "net/http"
-  "mime/multipart"
-  "bytes"
-  "path/filepath"
 	"io"
+	"mime/multipart"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/karrick/godirwalk"
 )
 
 type model struct {
@@ -38,67 +39,58 @@ var (
 	analysisResult    string
 )
 
- func (m model) Init() tea.Cmd{
+func (m model) Init() tea.Cmd {
 	return nil
 }
 
-// ... [imports and variable declarations]
-
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-    switch msg := msg.(type) {
-    case tea.KeyMsg:
-        switch m.state {
-        case mainMenu, textMenu, imageMenu, audioMenu:
-            switch msg.String() {
-            case "j", "ArrowDown":
-                selectedMenuIndex = (selectedMenuIndex + 1) % len(menuOptions)
-            case "k", "ArrowUp":
-                selectedMenuIndex = (selectedMenuIndex - 1 + len(menuOptions)) % len(menuOptions)
-            case "q", "Esc":
-                return m, tea.Quit
-            case "Enter":
-                switch selectedMenuIndex {
-                case 0, 1, 2:
-                    m.state = fileBrowser
-                    var err error
-                    files, err = listFiles(currentDirectory)
-                    if err != nil {
-                        // Handle the error, maybe change the state to an error state
-                        fmt.Println("Error listing files:", err)
-                    }
-                case 3:
-                    return m, tea.Quit
-                }
-            }
-        case fileBrowser:
-            switch msg.String() {
-            case "j", "ArrowDown":
-                selectedFileIndex = (selectedFileIndex + 1) % len(files)
-            case "k", "ArrowUp":
-                selectedFileIndex = (selectedFileIndex - 1 + len(files)) % len(files)
-            case "Enter":
-                analysisResult, err := sendFileToAI(files[selectedFileIndex])
-                if err != nil {
-                    // Handle the error. Here, I just print it, but you may want to 
-                    // change the state to an error state or do something else.
-                    fmt.Println("Error sending file to AI:", err)
-                } else {
-                    m.state = displayResult
-                }
-            case "q", "Esc":
-                m.state = mainMenu
-            }
-        case displayResult:
-            // Handle displaying results logic here
-        }
-    }
-    return m, nil
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch m.state {
+		case mainMenu, textMenu, imageMenu, audioMenu:
+			switch msg.String() {
+			case "j", "ArrowDown":
+				selectedMenuIndex = (selectedMenuIndex + 1) % len(menuOptions)
+			case "k", "ArrowUp":
+				selectedMenuIndex = (selectedMenuIndex - 1 + len(menuOptions)) % len(menuOptions)
+			case "q", "Esc":
+				return m, tea.Quit
+			case "Enter":
+				switch selectedMenuIndex {
+				case 0, 1, 2:
+					m.state = fileBrowser
+					var err error
+					files, err = listFiles(currentDirectory)
+					if err != nil {
+						fmt.Println("Error listing files:", err)
+					}
+				case 3:
+					return m, tea.Quit
+				}
+			}
+		case fileBrowser:
+			switch msg.String() {
+			case "j", "ArrowDown":
+				selectedFileIndex = (selectedFileIndex + 1) % len(files)
+			case "k", "ArrowUp":
+				selectedFileIndex = (selectedFileIndex - 1 + len(files)) % len(files)
+			case "Enter":
+				var err error
+				analysisResult, err = sendFileToAI(files[selectedFileIndex])
+				if err != nil {
+					fmt.Println("Error sending file to AI:", err)
+				} else {
+					m.state = displayResult
+				}
+			case "q", "Esc":
+				m.state = mainMenu
+			}
+		case displayResult:
+			// Handle displaying results logic here
+		}
+	}
+	return m, nil
 }
-
-// ... [rest of the code]
-
-
-//... (rest of the code below this point)
 
 func (m model) View() string {
 	var b strings.Builder
@@ -137,74 +129,63 @@ func main() {
 	}
 }
 
-// ... Other functions remain unchanged ...
-
-// Dummy function to represent sending a file to LocalAI
 func sendFileToAI(filePath string) (string, error) {
-    url := "http://localai.server.endpoint/analyze" // Replace with the actual endpoint of your LocalAI server
+	url := "http://localai.server.endpoint/analyze"
 
-    // Prepare the file for upload
-    file, err := os.Open(filePath)
-    if err != nil {
-        return "", err
-    }
-    defer file.Close()
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
 
-    // Create a buffer to store our request
-    body := &bytes.Buffer{}
-    writer := multipart.NewWriter(body)
-    part, err := writer.CreateFormFile("file", filepath.Base(filePath))
-    if err != nil {
-        return "", err
-    }
-    _, err = io.Copy(part, file)
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile("file", filepath.Base(filePath))
+	if err != nil {
+		return "", err
+	}
+	_, err = io.Copy(part, file)
 
-    // Important: Close the writer to finish sending the file
-    err = writer.Close()
-    if err != nil {
-        return "", err
-    }
+	err = writer.Close()
+	if err != nil {
+		return "", err
+	}
 
-    // Create a new POST request to the server
-    req, err := http.NewRequest("POST", url, body)
-    req.Header.Set("Content-Type", writer.FormDataContentType())
-    if err != nil {
-        return "", err
-    }
+	req, err := http.NewRequest("POST", url, body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	if err != nil {
+		return "", err
+	}
 
-    client := &http.Client{}
-    resp, err := client.Do(req)
-    if err != nil {
-        return "", err
-    }
-    defer resp.Body.Close()
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
 
-    // Read the response from the server
-    respBody, err := io.ReadAll(resp.Body)
-    if err != nil {
-        return "", err
-    }
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
 
-    // Here, I am assuming that the response is a string. 
-    // Adjust based on the actual response format (e.g., JSON).
-    return string(respBody), nil
+	return string(respBody), nil
 }
 
-}
 func listFiles(directory string) ([]string, error) {
-	var files []string
+	var filesList []string
 	err := godirwalk.Walk(directory, &godirwalk.Options{
 		Callback: func(osPathname string, de *godirwalk.Dirent) error {
 			if !de.IsDir() {
-				files = append(files, osPathname)
+				filesList = append(filesList, osPathname)
 			}
 			return nil
 		},
-		Unsorted: true, // Set true for faster file listing
+		Unsorted: true,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return files, nil
+	return filesList, nil
 }
 
