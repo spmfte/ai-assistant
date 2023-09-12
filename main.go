@@ -47,7 +47,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch m.state {
-		case mainMenu, textMenu, imageMenu, audioMenu:
+		case mainMenu:
 			switch msg.String() {
 			case "j", "ArrowDown":
 				selectedMenuIndex = (selectedMenuIndex + 1) % len(menuOptions)
@@ -55,7 +55,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				selectedMenuIndex = (selectedMenuIndex - 1 + len(menuOptions)) % len(menuOptions)
 			case "q", "Esc":
 				return m, tea.Quit
-			case "Enter":
+			case "Enter", "enter", "\r":
 				switch selectedMenuIndex {
 				case 0, 1, 2:
 					m.state = fileBrowser
@@ -74,7 +74,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				selectedFileIndex = (selectedFileIndex + 1) % len(files)
 			case "k", "ArrowUp":
 				selectedFileIndex = (selectedFileIndex - 1 + len(files)) % len(files)
-			case "Enter":
+			case "Enter", "\r", "\n":
 				var err error
 				analysisResult, err = sendFileToAI(files[selectedFileIndex])
 				if err != nil {
@@ -86,17 +86,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.state = mainMenu
 			}
 		case displayResult:
-			// Handle displaying results logic here
+			switch msg.String() {
+			case "q", "Esc":
+				m.state = mainMenu
+			}
 		}
 	}
 	return m, nil
 }
 
+
+
 func (m model) View() string {
 	var b strings.Builder
 
 	switch m.state {
-	case mainMenu, textMenu, imageMenu, audioMenu:
+	case mainMenu:
 		b.WriteString("Select an Option:\n\n")
 		for i, option := range menuOptions {
 			style := lipgloss.NewStyle().Foreground(lipgloss.Color("#FFF"))
@@ -106,6 +111,7 @@ func (m model) View() string {
 			b.WriteString(style.Render(option) + "\n")
 		}
 	case fileBrowser:
+		b.WriteString("Select a File:\n\n")
 		for i, file := range files {
 			style := lipgloss.NewStyle().Foreground(lipgloss.Color("#FFF"))
 			if i == selectedFileIndex {
@@ -120,6 +126,7 @@ func (m model) View() string {
 
 	return b.String()
 }
+
 
 func main() {
 	p := tea.NewProgram(model{state: mainMenu})
